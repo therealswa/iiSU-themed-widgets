@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather Widget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cal+Sans&display=swap" rel="stylesheet">
+<script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  #root {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: #f2f2f3;
+    border: none;
+    box-shadow: none;
+    padding: 16px;
+    font-family: 'Cal Sans', 'Nunito', system-ui, -apple-system, sans-serif;
+    transition: box-shadow 180ms ease, border-color 180ms ease;
+  }
+
+  #root:hover {
+    border-color: #e2e2e5;
+    box-shadow:
+      0 10px 28px rgba(0,0,0,0.055),
+      0 2px 5px rgba(0,0,0,0.04);
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  #city {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d2834;
+    letter-spacing: -0.018em;
+  }
+
+  #condition-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: #66666c;
+    letter-spacing: -0.005em;
+  }
+
+  #main-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 8px 0;
+  }
+
+  #weather-icon {
+    font-size: 48px;
+    color: #202023;
+  }
+
+  #temp-display {
+    font-size: 42px;
+    font-weight: 600;
+    color: #2d2834;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: #77777d;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stat iconify-icon {
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<div id="root">
+  <header>
+    <span id="city">--</span>
+    <span id="condition-text">Loading…</span>
+  </header>
+
+  <div id="main-content">
+    <iconify-icon id="weather-icon" icon="lucide:loader-2"></iconify-icon>
+    <div id="temp-display">--°</div>
+  </div>
+
+  <footer>
+    <div class="stat">
+      <iconify-icon icon="lucide:arrow-down"></iconify-icon>
+      <span id="temp-min">--°</span>
+    </div>
+    <div class="stat">
+      <iconify-icon icon="lucide:arrow-up"></iconify-icon>
+      <span id="temp-max">--°</span>
+    </div>
+    <div class="stat">
+      <iconify-icon icon="lucide:wind"></iconify-icon>
+      <span id="wind-speed">-- mph</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+
+  var API_URL;
+  // EDIT THIS!!!
+  // Set the latitude and longitude below to set the location for the widget.
+  // Use this site if needed: https://www.latlong.net/
+  // For example:
+  // const LAT = 51.5074;
+  // const LON = -0.1278;
+  const LAT = null;   // Latitude
+  const LON = null;   // Longitude
+
+  function buildUrl(lat, lon) {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      return 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+             '&current=temperature_2m,weather_code,wind_speed_10m' +
+             '&daily=temperature_2m_max,temperature_2m_min' +
+             '&wind_speed_unit=mph' + (tz ? ('&timezone=' + encodeURIComponent(tz)) : '');
+  }
+
+  if (LAT === null || LON === null || isNaN(LAT) || isNaN(LON)) {
+    document.getElementById('city').textContent = 'Enter Long/Lat';
+    document.getElementById('condition-text').textContent = '';
+  } else {
+    API_URL = buildUrl(LAT, LON);
+    fetchWeather();
+    setInterval(fetchWeather, 600000);
+    reverseGeocode(LAT, LON);
+  }
+  function getWeatherDetails(code) {
+    switch (code) {
+      case 0:
+        return { text: 'Clear Sky', icon: 'lucide:sun' };
+      case 1: case 2:
+        return { text: 'Partly Cloudy', icon: 'lucide:cloud-sun' };
+      case 3:
+        return { text: 'Overcast', icon: 'lucide:cloud' };
+      case 45: case 48:
+        return { text: 'Foggy', icon: 'lucide:cloud-fog' };
+      case 51: case 53: case 55: case 56: case 57:
+        return { text: 'Drizzle', icon: 'lucide:cloud-drizzle' };
+      case 61: case 63: case 65: case 66: case 67: case 80: case 81: case 82:
+        return { text: 'Rain', icon: 'lucide:cloud-rain' };
+      case 71: case 73: case 75: case 77: case 85: case 86:
+        return { text: 'Snow', icon: 'lucide:cloud-snow' };
+      case 95: case 96: case 99:
+        return { text: 'Thunderstorm', icon: 'lucide:cloud-lightning' };
+      default:
+        return { text: 'Clear', icon: 'lucide:sun' };
+    }
+  }
+
+  function fetchWeather() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', API_URL, true);
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          var data = JSON.parse(xhr.responseText);
+
+          var current = data.current;
+          var daily = data.daily;
+
+          var temp = Math.round(current.temperature_2m);
+          var minTemp = Math.round(daily.temperature_2m_min[0]);
+          var maxTemp = Math.round(daily.temperature_2m_max[0]);
+          var wind = Math.round(current.wind_speed_10m);
+          var condition = getWeatherDetails(current.weather_code);
+
+          document.getElementById('temp-display').textContent = temp + '°';
+          document.getElementById('condition-text').textContent = condition.text;
+          document.getElementById('weather-icon').setAttribute('icon', condition.icon);
+          document.getElementById('temp-min').textContent = minTemp + '°';
+          document.getElementById('temp-max').textContent = maxTemp + '°';
+          document.getElementById('wind-speed').textContent = wind + ' mph';
+        } catch (e) {
+          document.getElementById('condition-text').textContent = 'Error parsing data';
+        }
+      } else {
+        document.getElementById('condition-text').textContent = 'Error loading';
+      }
+    };
+    xhr.onerror = function () {
+      document.getElementById('condition-text').textContent = 'Offline';
+    };
+    xhr.send();
+  }
+
+  function reverseGeocode(lat, lon){
+    var url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=en`;
+    fetch(url)
+      .then(r=>r.json())
+      .then(data=>{
+        if(data && data.address){
+          var a = data.address;
+          var name = a.city || a.town || a.village || a.municipality ||
+                     a.suburb || a.county || a.state || '';
+          document.getElementById('city').textContent = name || 'Unknown';
+        }
+      })
+      .catch(()=>{}) ;
+  }
+})();
+</script>
+</body>
+</html>
