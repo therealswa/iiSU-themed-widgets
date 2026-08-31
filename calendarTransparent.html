@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendar Widget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cal+Sans&display=swap" rel="stylesheet">
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  #root {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 16px;
+    font-family: 'Cal Sans', 'Nunito', system-ui, -apple-system, sans-serif;
+    color: #f2f2f3;
+  }
+
+  #root:hover {
+    border-color: #e2e2e5;
+    box-shadow:
+      0 10px 28px rgba(0,0,0,0.055),
+      0 2px 5px rgba(0,0,0,0.04);
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  #month-year {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: -0.018em;
+  }
+
+  #day-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #ffffff;
+    letter-spacing: -0.005em;
+  }
+
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .day-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #ffffff;
+    padding-bottom: 4px;
+  }
+
+  .cell {
+    font-size: 12px;
+    font-weight: 500;
+    color: #ffffff;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .cell.empty {
+    visibility: hidden;
+  }
+
+  .cell.today {
+    background: #202023;
+    color: #f2f2f3;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div id="root">
+  <header>
+    <span id="month-year"></span>
+    <span id="day-name"></span>
+  </header>
+  <div id="grid"></div>
+</div>
+
+<script>
+(function () {
+  var now = new Date();
+  var year = now.getFullYear();
+  var month = now.getMonth();
+  var date = now.getDate();
+
+  var monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  var dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  var dayAbbrs = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+  document.getElementById('month-year').textContent = monthNames[month] + ' ' + year;
+  document.getElementById('day-name').textContent = dayNames[now.getDay()];
+
+  var grid = document.getElementById('grid');
+
+  dayAbbrs.forEach(function (abbr) {
+    var label = document.createElement('div');
+    label.className = 'day-label';
+    label.textContent = abbr;
+    grid.appendChild(label);
+  });
+
+  var firstDay = new Date(year, month, 1).getDay();
+  var totalDays = new Date(year, month + 1, 0).getDate();
+
+  for (var i = 0; i < firstDay; i++) {
+    var emptyCell = document.createElement('div');
+    emptyCell.className = 'cell empty';
+    grid.appendChild(emptyCell);
+  }
+
+  for (var d = 1; d <= totalDays; d++) {
+    var cell = document.createElement('div');
+    cell.className = 'cell' + (d === date ? ' today' : '');
+    cell.textContent = d;
+    grid.appendChild(cell);
+  }
+})();
+</script>
+</body>
+</html>
