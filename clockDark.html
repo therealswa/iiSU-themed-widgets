@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clock Widget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cal+Sans&display=swap" rel="stylesheet">
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  #root {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #414344;
+    border: none;
+    box-shadow: none;
+    padding: 16px;
+    font-family: 'Cal Sans', 'Nunito', system-ui, -apple-system, sans-serif;
+    transition: box-shadow 180ms ease, border-color 180ms ease;
+  }
+
+  #root:hover {
+    border-color: #e2e2e5;
+    box-shadow:
+      0 10px 28px rgba(0,0,0,0.055),
+      0 2px 5px rgba(0,0,0,0.04);
+  }
+
+  #clock-face {
+    position: relative;
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hand {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform-origin: bottom center;
+    border-radius: 999px;
+  }
+
+  #hour-hand {
+    width: 4px;
+    height: 28%;
+    background: #ffffff;
+    margin-left: -2px;
+  }
+
+  #minute-hand {
+    width: 3px;
+    height: 40%;
+    background: #ffffff;
+    margin-left: -1.5px;
+  }
+
+  #second-hand {
+    width: 1.5px;
+    height: 44%;
+    background: #ffffff;
+    margin-left: -0.75px;
+  }
+
+  #center-cap {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #ffffff;
+    border-radius: 50%;
+    z-index: 10;
+  }
+
+  #digital-time {
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #ffffff;
+    letter-spacing: -0.005em;
+  }
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="clock-face">
+    <div id="hour-hand" class="hand"></div>
+    <div id="minute-hand" class="hand"></div>
+    <div id="second-hand" class="hand"></div>
+    <div id="center-cap"></div>
+  </div>
+  <div id="digital-time">00:00:00</div>
+</div>
+
+<script>
+(function () {
+  var hourHand = document.getElementById('hour-hand');
+  var minuteHand = document.getElementById('minute-hand');
+  var secondHand = document.getElementById('second-hand');
+  var digitalTime = document.getElementById('digital-time');
+
+  function updateClock() {
+    var now = new Date();
+    var seconds = now.getSeconds();
+    var minutes = now.getMinutes();
+    var hours = now.getHours();
+
+    var secondDeg = (seconds / 60) * 360;
+    var minuteDeg = ((minutes + seconds / 60) / 60) * 360;
+    var hourDeg = (((hours % 12) + minutes / 60) / 12) * 360;
+
+    secondHand.style.transform = 'rotate(' + secondDeg + 'deg)';
+    minuteHand.style.transform = 'rotate(' + minuteDeg + 'deg)';
+    hourHand.style.transform = 'rotate(' + hourDeg + 'deg)';
+
+    var h = String(hours).padStart(2, '0');
+    var m = String(minutes).padStart(2, '0');
+    var s = String(seconds).padStart(2, '0');
+    digitalTime.textContent = h + ':' + m + ':' + s;
+  }
+
+  setInterval(updateClock, 1000);
+  updateClock();
+})();
+</script>
+</body>
+</html>
