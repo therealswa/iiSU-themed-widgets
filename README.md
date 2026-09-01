@@ -1,6 +1,6 @@
-### A clock, calendar and weather widget. 
+### Clock, calendar and weather widgets 
 
-The clock and calendar work out of the box, the weather one needs to be edited:
+The clock and calendar variants work out of the box, the weather one needs to be edited:
 
 1) Open the weather HTML file, scroll down to where it says: EDIT THIS
 2) Change the values for LAT and LON according to where you want the forecast for.
